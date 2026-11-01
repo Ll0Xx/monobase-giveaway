@@ -1,0 +1,909 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Monobase Giveaway</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎁</text></svg>">
+<style>
+  :root {
+    --bg: #f4f4f6;
+    --card: #ffffff;
+    --text: #16161a;
+    --muted: #6b6b76;
+    --line: #e2e2e8;
+    --accent: #4f46e5;
+    --accent-text: #ffffff;
+    --accent-soft: #eceafd;
+    --ok: #15803d;
+    --ok-soft: #dcfce7;
+    --error: #b42318;
+    --error-soft: #fee4e2;
+    --mask: #efeff3;
+    --radius: 14px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #111114;
+      --card: #1b1b20;
+      --text: #ececf1;
+      --muted: #9a9aa6;
+      --line: #2e2e36;
+      --accent: #8b85ff;
+      --accent-text: #111114;
+      --accent-soft: #29274a;
+      --ok: #4ade80;
+      --ok-soft: #173322;
+      --error: #ff8a80;
+      --error-soft: #3a1c1a;
+      --mask: #2a2a31;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  button, input, textarea { font: inherit; color: inherit; }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 0 16px; }
+
+  header.top { padding: 24px 0 8px; }
+  header.top .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: center; justify-content: space-between; }
+  h1 { margin: 0; font-size: 1.5rem; }
+  h2 { margin: 0 0 16px; font-size: 1.15rem; }
+  h3 { margin: 24px 0 12px; font-size: 1.05rem; }
+  .top-actions { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+
+  .switch { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; user-select: none; }
+  .switch input { appearance: none; width: 40px; height: 22px; border-radius: 11px; background: var(--line); position: relative; margin: 0; cursor: pointer; transition: background .15s; }
+  .switch input::after { content: ""; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%; background: var(--card); transition: transform .15s; }
+  .switch input:checked { background: var(--accent); }
+  .switch input:checked::after { transform: translateX(18px); }
+
+  .lang { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+  .lang button { border: 0; background: var(--card); padding: 4px 10px; cursor: pointer; }
+  .lang button[aria-pressed="true"] { background: var(--accent); color: var(--accent-text); }
+
+  main { padding: 8px 0 24px; display: grid; gap: 16px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px; min-width: 0; }
+  .muted { color: var(--muted); }
+  .error { color: var(--error); background: var(--error-soft); padding: 10px 12px; border-radius: 10px; }
+  .error button { margin-left: 8px; }
+
+  .drop { display: block; border: 2px dashed var(--line); border-radius: var(--radius); padding: 32px 16px; text-align: center; cursor: pointer; transition: border-color .15s, background .15s; }
+  .drop:hover, .drop.over { border-color: var(--accent); background: var(--accent-soft); }
+  .drop strong { display: block; font-size: 1.05rem; margin-bottom: 4px; }
+
+  .filters { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; align-items: start; }
+  .filters .wide { grid-column: 1 / -1; }
+  fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
+  legend, .field > span { display: block; font-weight: 600; font-size: .9rem; margin-bottom: 6px; }
+  .field { display: block; }
+  .field input, .field textarea { width: 100%; border: 1px solid var(--line); background: var(--bg); border-radius: 8px; padding: 8px 10px; }
+  .field textarea { resize: vertical; }
+  .check { display: flex; gap: 8px; align-items: center; cursor: pointer; margin: 4px 0; }
+  .check input { accent-color: var(--accent); width: 16px; height: 16px; margin: 0; }
+  .checks { display: flex; flex-direction: column; gap: 2px; }
+
+  .summary { font-size: 1.05rem; margin: 20px 0 12px; }
+  .summary b { color: var(--accent); }
+
+  .table-wrap { overflow: auto; max-height: 460px; border: 1px solid var(--line); border-radius: 10px; }
+  table { border-collapse: collapse; width: 100%; font-size: .9rem; }
+  th, td { padding: 8px 10px; text-align: left; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  td.long { white-space: normal; min-width: 180px; max-width: 320px; }
+  th { position: sticky; top: 0; background: var(--card); z-index: 1; font-weight: 600; }
+  tr.out td { opacity: .45; }
+  tr.out td:first-child, tr.out td:nth-child(2) { opacity: 1; }
+  .badge { display: inline-block; font-size: .78rem; padding: 1px 8px; border-radius: 999px; background: var(--mask); color: var(--muted); }
+  .badge.ok { background: var(--ok-soft); color: var(--ok); }
+  .num { font-variant-numeric: tabular-nums; }
+
+  .masked { background: var(--mask); border-radius: 5px; padding: 0 5px; cursor: pointer; border-bottom: 1px dashed var(--muted); letter-spacing: .02em; }
+  .masked:hover, .masked:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .masked.revealed { background: var(--accent-soft); border-bottom-color: var(--accent); }
+  .empty { color: var(--muted); }
+
+  .draw-controls { display: flex; flex-wrap: wrap; gap: 20px 32px; align-items: flex-end; }
+  .draw-controls .field input { width: 120px; }
+  .primary { background: var(--accent); color: var(--accent-text); border: 0; border-radius: 10px; padding: 10px 28px; font-weight: 600; font-size: 1rem; cursor: pointer; }
+  .primary:disabled { opacity: .5; cursor: not-allowed; }
+  .secondary { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 6px 12px; cursor: pointer; }
+  .secondary:hover { border-color: var(--accent); }
+
+  #stage { margin-top: 20px; border-radius: var(--radius); background: var(--accent-soft); padding: 32px 16px; text-align: center; }
+  #roller { font-size: clamp(1.4rem, 5vw, 2.2rem); font-weight: 700; min-height: 1.5em; overflow-wrap: anywhere; }
+  #roller.hit { color: var(--accent); animation: pop .4s ease; }
+  @keyframes pop { 50% { transform: scale(1.12); } }
+
+  #winners { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
+  #winners li { border: 1px solid var(--line); border-radius: 12px; padding: 14px; display: grid; gap: 4px; animation: pop .35s ease; min-width: 0; }
+  .place { font-size: .8rem; font-weight: 700; color: var(--accent); }
+  .w-name { font-size: 1.1rem; font-weight: 600; overflow-wrap: anywhere; }
+  .w-meta { font-size: .88rem; color: var(--muted); display: flex; flex-wrap: wrap; gap: 4px 10px; overflow-wrap: anywhere; }
+  #proof { margin: 14px 0 8px; font-size: .9rem; }
+  details pre { background: var(--bg); padding: 10px; border-radius: 8px; max-height: 200px; overflow: auto; font-size: .8rem; white-space: pre-wrap; word-break: break-all; }
+  .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+
+  footer { padding: 8px 0 32px; font-size: .85rem; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+  }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <h1 data-i18n="title"></h1>
+    <div class="top-actions">
+      <label class="switch"><input type="checkbox" id="privacy" checked><span data-i18n="privacy"></span></label>
+      <div class="lang" role="group" aria-label="Language">
+        <button type="button" data-lang="ua">UA</button><button type="button" data-lang="en">EN</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="card" id="step-upload">
+    <h2>1. <span data-i18n="uploadTitle"></span></h2>
+    <label class="drop" id="drop">
+      <input type="file" id="file" accept=".csv,text/csv" hidden>
+      <strong data-i18n="dropHint"></strong>
+      <span class="muted" data-i18n="dropSub"></span>
+    </label>
+    <p class="muted" id="file-info"></p>
+    <p class="error" id="file-error" hidden></p>
+  </section>
+
+  <section class="card" id="step-filter" hidden>
+    <h2>2. <span data-i18n="filterTitle"></span></h2>
+    <div class="filters">
+      <div class="checks">
+        <label class="check" id="f-active-wrap"><input type="checkbox" id="f-active" checked><span data-i18n="onlyActive"></span></label>
+        <label class="check"><input type="checkbox" id="f-dedupe" checked><span data-i18n="dedupe"></span></label>
+      </div>
+      <fieldset id="f-tiers"><legend data-i18n="tiers"></legend><div class="checks" id="tier-list"></div></fieldset>
+      <label class="field" id="f-min-wrap"><span data-i18n="minAmount"></span><input type="number" id="f-min" min="0" step="any" placeholder="0"></label>
+      <label class="field" id="f-before-wrap"><span data-i18n="before"></span><input type="date" id="f-before"></label>
+      <label class="field wide"><span data-i18n="exclude"></span><textarea id="f-exclude" rows="3" data-i18n-ph="excludePh"></textarea></label>
+    </div>
+    <p class="summary" id="summary"></p>
+    <div class="table-wrap"><table id="table"><thead></thead><tbody></tbody></table></div>
+  </section>
+
+  <section class="card" id="step-draw" hidden>
+    <h2>3. <span data-i18n="drawTitle"></span></h2>
+    <div class="draw-controls">
+      <label class="field"><span data-i18n="winnersCount"></span><input type="number" id="d-count" min="1" value="1"></label>
+      <fieldset>
+        <legend data-i18n="source"></legend>
+        <label class="check"><input type="radio" name="src" value="randomorg" checked><span>random.org</span></label>
+        <label class="check"><input type="radio" name="src" value="local"><span data-i18n="localSrc"></span></label>
+      </fieldset>
+      <label class="check"><input type="checkbox" id="d-anim" checked><span data-i18n="animation"></span></label>
+      <button type="button" class="primary" id="draw" data-i18n="drawBtn"></button>
+    </div>
+    <p class="error" id="draw-error" hidden><span id="draw-error-text"></span><button type="button" class="secondary" id="use-local" data-i18n="useLocal"></button></p>
+    <div id="stage" hidden><div id="roller" aria-live="polite"></div></div>
+    <div id="results" hidden>
+      <h3 data-i18n="winnersTitle"></h3>
+      <ol id="winners"></ol>
+      <div id="after" hidden>
+        <p class="muted" id="proof"></p>
+        <details id="raw-wrap"><summary data-i18n="raw"></summary><pre id="raw"></pre></details>
+        <div class="actions">
+          <button type="button" class="secondary" id="copy" data-i18n="copy"></button>
+          <button type="button" class="secondary" id="csv-masked" data-i18n="csvMasked"></button>
+          <button type="button" class="secondary" id="csv-full" data-i18n="csvFull"></button>
+          <button type="button" class="secondary" id="exclude-winners" data-i18n="excludeWinners"></button>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="wrap muted" data-i18n="footer"></footer>
+
+<script>
+'use strict';
+
+const I18N = {
+  ua: {
+    title: 'Розіграш для підписників Monobase',
+    privacy: 'Приховати дані',
+    uploadTitle: 'Завантажте експорт підписників',
+    dropHint: 'Перетягніть CSV-файл сюди або натисніть, щоб вибрати',
+    dropSub: 'Файл обробляється лише у вашому браузері',
+    fileInfo: '{name}: {rows} рядків',
+    errEmpty: 'Файл порожній або не містить рядків з даними.',
+    errRead: 'Не вдалося прочитати файл: {msg}',
+    filterTitle: 'Умови участі',
+    onlyActive: 'Лише активні підписки',
+    dedupe: 'Прибрати дублікати (за email або ID)',
+    tiers: 'Тарифи',
+    minAmount: 'Мінімальна сума',
+    before: 'Підписані до дати',
+    exclude: 'Виключити (ID, email або ім’я — по одному в рядку)',
+    excludePh: 'sub_123abc\nname@example.com',
+    summary: 'Беруть участь: <b>{n}</b> з {total}',
+    colEligible: 'Участь',
+    ok: 'Так',
+    rActive: 'Неактивна',
+    rTier: 'Тариф',
+    rAmount: 'Сума',
+    rDate: 'Дата',
+    rExcluded: 'Виключено',
+    rDup: 'Дублікат',
+    drawTitle: 'Розіграш',
+    winnersCount: 'Кількість переможців',
+    source: 'Джерело випадковості',
+    localSrc: 'Локально (crypto)',
+    animation: 'Анімація',
+    drawBtn: 'Розіграти',
+    drawing: 'Розігруємо…',
+    errRandom: 'random.org недоступний: {msg}',
+    useLocal: 'Розіграти локально',
+    winnersTitle: 'Переможці',
+    proof: 'Джерело: {source} · {time} · учасників: {n} · файл: {file}',
+    sourceLocal: 'локально (crypto.getRandomValues)',
+    raw: 'Відповідь random.org',
+    copy: 'Копіювати список',
+    copied: 'Скопійовано!',
+    csvMasked: 'CSV (приховано)',
+    csvFull: 'CSV (повні дані)',
+    excludeWinners: 'Виключити переможців з наступного розіграшу',
+    clickReveal: 'Натисніть, щоб показати',
+    clickHide: 'Натисніть, щоб приховати',
+    place: 'Місце',
+    footer: 'Дані з CSV не залишають ваш браузер. На random.org надсилається лише кількість учасників.'
+  },
+  en: {
+    title: 'Monobase Subscriber Giveaway',
+    privacy: 'Hide data',
+    uploadTitle: 'Upload subscriber export',
+    dropHint: 'Drop a CSV file here or click to choose',
+    dropSub: 'The file is processed only in your browser',
+    fileInfo: '{name}: {rows} rows',
+    errEmpty: 'The file is empty or has no data rows.',
+    errRead: 'Could not read the file: {msg}',
+    filterTitle: 'Eligibility',
+    onlyActive: 'Active subscriptions only',
+    dedupe: 'Remove duplicates (by email or ID)',
+    tiers: 'Tiers',
+    minAmount: 'Minimum amount',
+    before: 'Subscribed before',
+    exclude: 'Exclude (ID, email or name — one per line)',
+    excludePh: 'sub_123abc\nname@example.com',
+    summary: 'Participating: <b>{n}</b> of {total}',
+    colEligible: 'Eligible',
+    ok: 'Yes',
+    rActive: 'Inactive',
+    rTier: 'Tier',
+    rAmount: 'Amount',
+    rDate: 'Date',
+    rExcluded: 'Excluded',
+    rDup: 'Duplicate',
+    drawTitle: 'Draw',
+    winnersCount: 'Number of winners',
+    source: 'Randomness source',
+    localSrc: 'Local (crypto)',
+    animation: 'Animation',
+    drawBtn: 'Draw',
+    drawing: 'Drawing…',
+    errRandom: 'random.org is unavailable: {msg}',
+    useLocal: 'Draw locally',
+    winnersTitle: 'Winners',
+    proof: 'Source: {source} · {time} · participants: {n} · file: {file}',
+    sourceLocal: 'local (crypto.getRandomValues)',
+    raw: 'random.org response',
+    copy: 'Copy list',
+    copied: 'Copied!',
+    csvMasked: 'CSV (masked)',
+    csvFull: 'CSV (full data)',
+    excludeWinners: 'Exclude winners from next draw',
+    clickReveal: 'Click to reveal',
+    clickHide: 'Click to hide',
+    place: 'Place',
+    footer: 'CSV data never leaves your browser. Only the participant count is sent to random.org.'
+  }
+};
+
+
+// Header patterns, checked in order; "next" goes before "created" so "Next Payment Date" isn't taken as the start date.
+const COLUMN_PATTERNS = [
+  ['next', /next|наступн/i],
+  ['created', /created|start|subscribed|створ|підпис|дата/i],
+  ['email', /e-?mail|пошт/i],
+  ['phone', /phone|тел/i],
+  ['id', /\bid\b|ідентиф/i],
+  ['name', /name|nick|ім.?я|нік/i],
+  ['tier', /tier|plan|level|тариф|рівень|тір/i],
+  ['amount', /amount|sum|price|сума|ціна/i],
+  ['status', /status|статус/i],
+  ['comment', /comment|message|note|комент|повідом/i]
+];
+
+const dots = n => '•'.repeat(Math.max(1, Math.min(n, 6)));
+const maskWord = w => {
+  const a = [...w];
+  if (a.length <= 1) return '•';
+  if (a.length === 2) return a[0] + '•';
+  return a[0] + dots(a.length - 2) + a[a.length - 1];
+};
+const maskText = s => s.replace(/[\p{L}\p{N}_]+/gu, maskWord);
+const keep = (s, n) => [...s].slice(0, n).join('');
+const maskEmail = s => {
+  const at = s.lastIndexOf('@');
+  if (at < 1) return maskText(s);
+  const local = s.slice(0, at), domain = s.slice(at + 1);
+  const dot = domain.lastIndexOf('.');
+  const host = dot > 0 ? domain.slice(0, dot) : domain;
+  const tld = dot > 0 ? domain.slice(dot) : '';
+  return keep(local, local.length > 3 ? 2 : 1) + '•••@' + keep(host, host.length > 3 ? 2 : 1) + '•••' + tld;
+};
+const maskId = s => {
+  const a = [...s];
+  if (a.length <= 6) return a[0] + dots(a.length - 1);
+  return a.slice(0, Math.min(6, a.length - 4)).join('') + dots(4) + a.slice(-2).join('');
+};
+const maskPhone = s => {
+  let digits = (s.match(/\d/g) || []).length;
+  return s.replace(/\d/g, d => (--digits < 2 ? d : '•'));
+};
+const MASKERS = { id: maskId, name: maskText, email: maskEmail, phone: maskPhone, comment: () => '••••••' };
+const LONG_COLUMNS = new Set(['comment']);
+
+const $ = s => document.querySelector(s);
+const store = {
+  get(k) { try { return localStorage.getItem(k); } catch { return null; } },
+  set(k, v) { try { localStorage.setItem(k, v); } catch { /* storage unavailable */ } }
+};
+
+let lang = store.get('lang') === 'en' ? 'en' : 'ua';
+const state = {
+  headers: [], cols: {}, colType: [], rows: [], pool: [], fileName: '',
+  secrets: new Map(), revealed: new Set(), lastDraw: null
+};
+
+function t(key, vars = {}) {
+  const s = I18N[lang][key] ?? I18N.ua[key] ?? key;
+  return s.replace(/\{(\w+)\}/g, (_, n) => vars[n] ?? '');
+}
+const privacyOn = () => $('#privacy').checked;
+
+/* ---------- CSV ---------- */
+
+function detectDelimiter(text) {
+  const first = text.split(/\r?\n/, 1)[0];
+  return [',', ';', '\t'].map(d => [d, first.split(d).length]).sort((a, b) => b[1] - a[1])[0][0];
+}
+
+function parseCSV(text) {
+  const delim = detectDelimiter(text);
+  const rows = [];
+  let row = [], field = '', quoted = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (quoted) {
+      if (c === '"') {
+        if (text[i + 1] === '"') { field += '"'; i++; } else quoted = false;
+      } else field += c;
+    } else if (c === '"') quoted = true;
+    else if (c === delim) { row.push(field); field = ''; }
+    else if (c === '\n' || c === '\r') {
+      if (c === '\r' && text[i + 1] === '\n') i++;
+      row.push(field); rows.push(row); row = []; field = '';
+    } else field += c;
+  }
+  if (field !== '' || row.length) { row.push(field); rows.push(row); }
+  return rows.filter(r => r.some(f => f.trim() !== ''));
+}
+
+async function decodeFile(file) {
+  const buf = await file.arrayBuffer();
+  try { return new TextDecoder('utf-8', { fatal: true }).decode(buf); }
+  catch { return new TextDecoder('windows-1251').decode(buf); }
+}
+
+function detectColumns(headers) {
+  const cols = {};
+  headers.forEach((h, i) => {
+    const hit = COLUMN_PATTERNS.find(([key, re]) => cols[key] == null && re.test(h));
+    if (hit) cols[hit[0]] = i;
+  });
+  return cols;
+}
+
+function parseAmount(s) {
+  const n = parseFloat(s.replace(/\s/g, '').replace(',', '.').replace(/[^\d.-]/g, ''));
+  return Number.isFinite(n) ? n : null;
+}
+
+function parseDate(s) {
+  if (!s) return null;
+  let m = s.match(/^(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{2}):(\d{2})(?::(\d{2}))?)?/);
+  if (m) return new Date(+m[1], m[2] - 1, +m[3], +(m[4] || 0), +(m[5] || 0), +(m[6] || 0));
+  m = s.match(/^(\d{2})\.(\d{2})\.(\d{4})(?:[ T](\d{2}):(\d{2})(?::(\d{2}))?)?/);
+  if (m) return new Date(+m[3], m[2] - 1, +m[1], +(m[4] || 0), +(m[5] || 0), +(m[6] || 0));
+  const d = new Date(s);
+  return isNaN(d) ? null : d;
+}
+
+function loadText(text, fileName) {
+  const table = parseCSV(text.replace(/^﻿/, ''));
+  if (table.length < 2) throw new Error(t('errEmpty'));
+  const headers = table[0].map(h => h.trim());
+  const cols = detectColumns(headers);
+  const rows = table.slice(1).map((cells, idx) => {
+    const get = key => (cols[key] != null ? (cells[cols[key]] ?? '').trim() : '');
+    return {
+      idx, cells,
+      id: get('id'), name: get('name'), email: get('email'), tier: get('tier'), status: get('status'),
+      amount: parseAmount(get('amount')), created: parseDate(get('created')), reason: null
+    };
+  });
+  Object.assign(state, {
+    headers, cols, rows, fileName,
+    colType: headers.map((_, i) => Object.keys(cols).find(k => cols[k] === i) || null),
+    secrets: new Map(), revealed: new Set(), lastDraw: null
+  });
+  buildFilters();
+  $('#step-filter').hidden = false;
+  $('#step-draw').hidden = false;
+  $('#draw-error').hidden = true;
+  $('#results').hidden = true;
+  renderFileInfo();
+  refresh();
+}
+
+/* ---------- Privacy ---------- */
+
+function secretNode(value, type, key) {
+  const el = document.createElement('span');
+  if (!value) { el.textContent = '—'; el.className = 'empty'; return el; }
+  if (!MASKERS[type] || !privacyOn()) { el.textContent = value; return el; }
+  state.secrets.set(key, { value, type });
+  el.className = 'masked';
+  el.dataset.key = key;
+  el.tabIndex = 0;
+  el.setAttribute('role', 'button');
+  paintSecret(el);
+  return el;
+}
+
+function paintSecret(el) {
+  const { value, type } = state.secrets.get(el.dataset.key);
+  const shown = state.revealed.has(el.dataset.key);
+  el.textContent = shown ? value : MASKERS[type](value);
+  el.classList.toggle('revealed', shown);
+  el.title = t(shown ? 'clickHide' : 'clickReveal');
+  el.setAttribute('aria-pressed', String(shown));
+}
+
+function toggleSecret(key) {
+  if (state.revealed.has(key)) state.revealed.delete(key); else state.revealed.add(key);
+  document.querySelectorAll(`.masked[data-key="${CSS.escape(key)}"]`).forEach(paintSecret);
+}
+
+// Value as plain text, masked when privacy is on (used for animation, clipboard).
+function displayField(row, key) {
+  const v = row[key] || '';
+  return v && privacyOn() && MASKERS[key] ? MASKERS[key](v) : v;
+}
+
+// A row field rendered as a clickable secret; keyed by column so table and winner cards stay in sync.
+function fieldNode(row, key) {
+  const col = state.cols[key];
+  return secretNode(row[key], key, `${row.idx}:${col}`);
+}
+
+/* ---------- Filters ---------- */
+
+function buildFilters() {
+  const { cols, rows } = state;
+  $('#f-active-wrap').hidden = cols.status == null;
+  $('#f-min-wrap').hidden = cols.amount == null;
+  $('#f-before-wrap').hidden = cols.created == null;
+  $('#f-min').value = '';
+  $('#f-before').value = '';
+  $('#f-exclude').value = '';
+
+  const tiers = [...new Set(rows.map(r => r.tier).filter(Boolean))].sort((a, b) => a.localeCompare(b));
+  $('#f-tiers').hidden = !tiers.length;
+  $('#tier-list').replaceChildren(...tiers.map(tier => {
+    const label = document.createElement('label');
+    label.className = 'check';
+    const input = document.createElement('input');
+    input.type = 'checkbox';
+    input.value = tier;
+    input.checked = true;
+    const span = document.createElement('span');
+    const count = rows.filter(r => r.tier === tier).length;
+    span.textContent = `${tier} (${count})`;
+    label.append(input, span);
+    return label;
+  }));
+}
+
+function readFilters() {
+  const { cols } = state;
+  const before = $('#f-before').value;
+  return {
+    active: cols.status != null && $('#f-active').checked,
+    dedupe: $('#f-dedupe').checked,
+    tiers: cols.tier != null ? new Set([...document.querySelectorAll('#tier-list input:checked')].map(i => i.value)) : null,
+    min: cols.amount != null ? parseFloat($('#f-min').value) || 0 : 0,
+    before: cols.created != null && before ? parseDate(before) : null,
+    exclude: new Set($('#f-exclude').value.split(/\r?\n/).map(s => s.trim().toLowerCase()).filter(Boolean))
+  };
+}
+
+const isActive = status => /^(active|активн|оплачен|paid)/i.test(status);
+
+function evaluate() {
+  const f = readFilters();
+  const seen = new Set();
+  for (const r of state.rows) {
+    let reason = null;
+    if (f.active && !isActive(r.status)) reason = 'rActive';
+    else if (f.tiers && !f.tiers.has(r.tier)) reason = 'rTier';
+    else if (f.min && !(r.amount >= f.min)) reason = 'rAmount';
+    else if (f.before && !(r.created && r.created < f.before)) reason = 'rDate';
+    else if (f.exclude.size && [r.id, r.email, r.name].some(v => v && f.exclude.has(v.toLowerCase()))) reason = 'rExcluded';
+    else if (f.dedupe) {
+      const k = (r.email || r.id || r.name).toLowerCase();
+      if (k && seen.has(k)) reason = 'rDup'; else seen.add(k);
+    }
+    r.reason = reason;
+  }
+  state.pool = state.rows.filter(r => !r.reason);
+}
+
+function refresh() {
+  evaluate();
+  renderTable();
+  $('#summary').innerHTML = t('summary', { n: state.pool.length, total: state.rows.length });
+  const count = $('#d-count');
+  count.max = Math.max(1, state.pool.length);
+  $('#draw').disabled = !state.pool.length;
+}
+
+/* ---------- Rendering ---------- */
+
+function renderFileInfo() {
+  $('#file-info').textContent = state.fileName ? t('fileInfo', { name: state.fileName, rows: state.rows.length }) : '';
+}
+
+function renderTable() {
+  const head = document.createElement('tr');
+  ['#', t('colEligible'), ...state.headers].forEach(h => {
+    const th = document.createElement('th');
+    th.textContent = h;
+    head.append(th);
+  });
+  $('#table thead').replaceChildren(head);
+
+  $('#table tbody').replaceChildren(...state.rows.map(r => {
+    const tr = document.createElement('tr');
+    if (r.reason) tr.className = 'out';
+    const num = document.createElement('td');
+    num.className = 'num muted';
+    num.textContent = r.idx + 1;
+    const status = document.createElement('td');
+    const badge = document.createElement('span');
+    badge.className = 'badge' + (r.reason ? '' : ' ok');
+    badge.textContent = t(r.reason || 'ok');
+    status.append(badge);
+    tr.append(num, status);
+    state.headers.forEach((_, c) => {
+      const td = document.createElement('td');
+      const type = state.colType[c];
+      if (LONG_COLUMNS.has(type)) td.className = 'long';
+      if (type === 'amount') td.className = 'num';
+      td.append(secretNode((r.cells[c] ?? '').trim(), type, `${r.idx}:${c}`));
+      tr.append(td);
+    });
+    return tr;
+  }));
+}
+
+function winnerCard(r, i) {
+  const li = document.createElement('li');
+  const place = document.createElement('div');
+  place.className = 'place';
+  place.textContent = `#${i + 1}`;
+  const name = document.createElement('div');
+  name.className = 'w-name';
+  name.append(state.cols.name != null && r.name ? fieldNode(r, 'name') : fieldNode(r, 'id'));
+  const meta = document.createElement('div');
+  meta.className = 'w-meta';
+  if (r.email) meta.append(fieldNode(r, 'email'));
+  if (r.id && state.cols.name != null && r.name) meta.append(fieldNode(r, 'id'));
+  const extra = [r.tier, r.amount != null ? String(r.amount) : ''].filter(Boolean).join(' · ');
+  if (extra) {
+    const span = document.createElement('span');
+    span.textContent = extra;
+    meta.append(span);
+  }
+  li.append(place, name, meta);
+  return li;
+}
+
+function renderResults(shownCount) {
+  const d = state.lastDraw;
+  if (!d) { $('#results').hidden = true; return; }
+  const n = shownCount ?? d.winners.length;
+  $('#results').hidden = false;
+  $('#winners').replaceChildren(...d.winners.slice(0, n).map(winnerCard));
+  const done = n === d.winners.length && d.done;
+  $('#after').hidden = !done;
+  if (!done) return;
+  $('#proof').textContent = t('proof', {
+    source: d.source === 'randomorg' ? 'random.org' : t('sourceLocal'),
+    time: d.at.toLocaleString(lang === 'ua' ? 'uk-UA' : 'en-GB'),
+    n: d.poolSize,
+    file: d.fileName
+  });
+  $('#raw-wrap').hidden = !d.raw;
+  $('#raw').textContent = d.raw ? `GET ${d.url}\n\n${d.raw.trim()}` : '';
+}
+
+function applyI18n() {
+  document.documentElement.lang = lang === 'ua' ? 'uk' : 'en';
+  document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.dataset.i18n); });
+  document.querySelectorAll('[data-i18n-ph]').forEach(el => { el.placeholder = t(el.dataset.i18nPh); });
+  document.querySelectorAll('.lang button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.lang === lang)));
+  if (state.rows.length) {
+    renderFileInfo();
+    refresh();
+    renderResults();
+  }
+}
+
+/* ---------- Randomness ---------- */
+
+// Uniform integer in [0, max) without modulo bias.
+function randInt(max) {
+  const limit = Math.floor(0x100000000 / max) * max;
+  const buf = new Uint32Array(1);
+  do crypto.getRandomValues(buf); while (buf[0] >= limit);
+  return buf[0] % max;
+}
+
+// Partial Fisher–Yates: k distinct indexes from [0, n).
+function localPick(n, k) {
+  const idx = Array.from({ length: n }, (_, i) => i);
+  for (let i = 0; i < k; i++) {
+    const j = i + randInt(n - i);
+    [idx[i], idx[j]] = [idx[j], idx[i]];
+  }
+  return idx.slice(0, k);
+}
+
+async function fetchText(url) {
+  const ctl = new AbortController();
+  const timer = setTimeout(() => ctl.abort(), 10000);
+  try {
+    const res = await fetch(url, { signal: ctl.signal, cache: 'no-store' });
+    const text = await res.text();
+    if (!res.ok || /^error/i.test(text.trim())) throw new Error(text.trim() || `HTTP ${res.status}`);
+    return text;
+  } catch (e) {
+    throw new Error(e.name === 'AbortError' ? 'timeout' : e.message);
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+// Keyless random.org HTTP API. Sequences give a shuffle of 1..n (n ≤ 10 000);
+// above that, draw integers and skip repeats.
+async function randomOrgPick(n, k) {
+  if (n === 1) return { picks: [0], raw: '', url: '' };
+  if (n <= 10000) {
+    const url = `https://www.random.org/sequences/?min=1&max=${n}&col=1&format=plain&rnd=new`;
+    const raw = await fetchText(url);
+    const seq = raw.trim().split(/\s+/).map(Number);
+    if (seq.length !== n || seq.some(x => !(x >= 1 && x <= n))) throw new Error('unexpected response');
+    return { picks: seq.slice(0, k).map(x => x - 1), raw, url };
+  }
+  const picks = [], seen = new Set(), raws = [];
+  let url = '';
+  for (let attempt = 0; picks.length < k && attempt < 10; attempt++) {
+    const num = Math.min(10000, (k - picks.length) * 2);
+    url = `https://www.random.org/integers/?num=${num}&min=1&max=${n}&col=1&base=10&format=plain&rnd=new`;
+    const raw = await fetchText(url);
+    raws.push(raw.trim());
+    for (const x of raw.trim().split(/\s+/).map(Number)) {
+      if (x >= 1 && x <= n && !seen.has(x) && picks.length < k) { seen.add(x); picks.push(x - 1); }
+    }
+  }
+  if (picks.length < k) throw new Error('not enough unique numbers');
+  return { picks, raw: raws.join('\n'), url };
+}
+
+/* ---------- Draw ---------- */
+
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const reducedMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+const rowLabel = r => displayField(r, 'name') || displayField(r, 'id') || `#${r.idx + 1}`;
+
+async function animate(pool, d) {
+  const roller = $('#roller');
+  $('#stage').hidden = false;
+  for (let w = 0; w < d.winners.length; w++) {
+    const duration = w === 0 ? 2200 : 900;
+    const start = performance.now();
+    roller.classList.remove('hit');
+    let p;
+    while ((p = (performance.now() - start) / duration) < 1) {
+      // Visual only — the result is already decided.
+      roller.textContent = rowLabel(pool[Math.floor(Math.random() * pool.length)]);
+      await sleep(40 + 220 * p * p);
+    }
+    roller.textContent = rowLabel(d.winners[w]);
+    roller.classList.add('hit');
+    renderResults(w + 1);
+    await sleep(w === d.winners.length - 1 ? 900 : 600);
+  }
+  $('#stage').hidden = true;
+}
+
+let drawing = false;
+async function runDraw(forceLocal = false) {
+  if (drawing) return;
+  const pool = state.pool.slice();
+  if (!pool.length) return;
+  const k = Math.max(1, Math.min(parseInt($('#d-count').value, 10) || 1, pool.length));
+  $('#d-count').value = k;
+  const source = forceLocal ? 'local' : document.querySelector('input[name="src"]:checked').value;
+
+  drawing = true;
+  const btn = $('#draw');
+  btn.disabled = true;
+  btn.textContent = t('drawing');
+  $('#draw-error').hidden = true;
+  try {
+    let picks, raw = '', url = '';
+    if (source === 'randomorg') {
+      try {
+        ({ picks, raw, url } = await randomOrgPick(pool.length, k));
+      } catch (e) {
+        $('#draw-error-text').textContent = t('errRandom', { msg: e.message });
+        $('#draw-error').hidden = false;
+        return;
+      }
+    } else {
+      picks = localPick(pool.length, k);
+    }
+    state.lastDraw = {
+      winners: picks.map(i => pool[i]), source, raw, url,
+      at: new Date(), poolSize: pool.length, fileName: state.fileName, done: false
+    };
+    $('#results').hidden = true;
+    if ($('#d-anim').checked && !reducedMotion()) await animate(pool, state.lastDraw);
+    state.lastDraw.done = true;
+    renderResults();
+  } finally {
+    drawing = false;
+    btn.textContent = t('drawBtn');
+    btn.disabled = !state.pool.length;
+  }
+}
+
+/* ---------- Export ---------- */
+
+// Quote for CSV and defuse spreadsheet formulas (=, +, -, @ at the start).
+const csvCell = v => {
+  let s = String(v ?? '');
+  if (/^[=+\-@\t\r]/.test(s)) s = "'" + s;
+  return /[",\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+};
+
+function exportCSV(masked) {
+  const d = state.lastDraw;
+  if (!d) return;
+  const lines = [[t('place'), ...state.headers]];
+  d.winners.forEach((r, i) => {
+    lines.push([i + 1, ...state.headers.map((_, c) => {
+      const v = (r.cells[c] ?? '').trim();
+      const mask = MASKERS[state.colType[c]];
+      return masked && v && mask ? mask(v) : v;
+    })]);
+  });
+  const csv = '﻿' + lines.map(l => l.map(csvCell).join(',')).join('\r\n');
+  const stamp = d.at.toISOString().slice(0, 16).replace(/[-:T]/g, '');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+  a.download = `winners-${stamp}${masked ? '-masked' : ''}.csv`;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+
+async function copyWinners() {
+  const d = state.lastDraw;
+  if (!d) return;
+  const text = d.winners.map((r, i) => {
+    const email = displayField(r, 'email');
+    return `${i + 1}. ${rowLabel(r)}${email ? ' — ' + email : ''}`;
+  }).join('\n');
+  const btn = $('#copy');
+  try {
+    await navigator.clipboard.writeText(text);
+    btn.textContent = t('copied');
+    setTimeout(() => { btn.textContent = t('copy'); }, 1500);
+  } catch {
+    prompt('', text);
+  }
+}
+
+function excludeWinners() {
+  const d = state.lastDraw;
+  if (!d) return;
+  const area = $('#f-exclude');
+  const existing = new Set(area.value.split(/\r?\n/).map(s => s.trim().toLowerCase()).filter(Boolean));
+  const add = d.winners.map(r => r.id || r.email || r.name).filter(v => v && !existing.has(v.toLowerCase()));
+  area.value = [area.value.trim(), ...add].filter(Boolean).join('\n');
+  refresh();
+  area.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+/* ---------- Events ---------- */
+
+async function handleFile(file) {
+  if (!file) return;
+  $('#file-error').hidden = true;
+  try {
+    loadText(await decodeFile(file), file.name);
+  } catch (e) {
+    $('#file-error').textContent = t('errRead', { msg: e.message });
+    $('#file-error').hidden = false;
+  }
+}
+
+$('#file').addEventListener('change', e => { handleFile(e.target.files[0]); e.target.value = ''; });
+const drop = $('#drop');
+drop.addEventListener('dragover', e => { e.preventDefault(); drop.classList.add('over'); });
+drop.addEventListener('dragleave', () => drop.classList.remove('over'));
+drop.addEventListener('drop', e => {
+  e.preventDefault();
+  drop.classList.remove('over');
+  handleFile(e.dataTransfer.files[0]);
+});
+
+$('#step-filter').addEventListener('input', e => { if (e.target.closest('.filters')) refresh(); });
+
+$('#privacy').addEventListener('change', () => {
+  state.revealed.clear();
+  state.secrets.clear();
+  if (state.rows.length) { renderTable(); renderResults(); }
+});
+document.addEventListener('click', e => {
+  const el = e.target.closest('.masked');
+  if (el) toggleSecret(el.dataset.key);
+});
+document.addEventListener('keydown', e => {
+  const el = e.target.closest?.('.masked');
+  if (el && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); toggleSecret(el.dataset.key); }
+});
+
+document.querySelectorAll('.lang button').forEach(b => b.addEventListener('click', () => {
+  lang = b.dataset.lang;
+  store.set('lang', lang);
+  applyI18n();
+}));
+
+$('#draw').addEventListener('click', () => runDraw());
+$('#use-local').addEventListener('click', () => runDraw(true));
+$('#copy').addEventListener('click', copyWinners);
+$('#csv-masked').addEventListener('click', () => exportCSV(true));
+$('#csv-full').addEventListener('click', () => exportCSV(false));
+$('#exclude-winners').addEventListener('click', excludeWinners);
+
+applyI18n();
+</script>
+</body>
+</html>
